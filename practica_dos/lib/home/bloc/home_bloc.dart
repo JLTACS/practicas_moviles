@@ -41,8 +41,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   List<TodoRemainder> _loadReminders() {
-    // ver si existen datos To-doRemainder en la box y sacarlos como Lista (no es necesario hacer get ni put)
-    // debe haber un adapter para que la BD pueda detectar el objeto
     if(_reminderBox.isNotEmpty){
       List<TodoRemainder> _reminderList = List();
       for(var i = 0; i < _reminderBox.length; i++){
@@ -52,8 +50,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }else{
       throw EmptyDatabase();
     }
-
-    
   }
 
   void _saveTodoReminder(TodoRemainder todoReminder) {

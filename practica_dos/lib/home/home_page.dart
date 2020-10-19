@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
             if (state is HomeInitialState) {
               _homeBloc.add(OnLoadRemindersEvent());
             }
-            // TODO: add more states or bloc consumer instead if needed
+            
             return HomeBody(
               homeState: state,
               homeBloc: _homeBloc,
