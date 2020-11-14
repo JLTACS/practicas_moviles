@@ -8,14 +8,16 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:noticias/models/noticia.dart';
+import 'package:noticias/models/source.dart' as ModelSource;
 import 'package:path/path.dart' as Path;
 
 part 'misnoticias_event.dart';
 part 'misnoticias_state.dart';
 
 class MisnoticiasBloc extends Bloc<MisnoticiasEvent, MisnoticiasState> {
-    List<DocumentSnapshot> _documentsList;
+    
     List<Noticia> _noticiaList;
+    Stream<QuerySnapshot> _streamNoticias;
     List<Noticia> get getNoticiasList => _noticiaList;
     File chosenImage;
   MisnoticiasBloc() : super(MisnoticiasInitial());
@@ -26,20 +28,29 @@ class MisnoticiasBloc extends Bloc<MisnoticiasEvent, MisnoticiasState> {
   ) async* {
     if(event is LeerNoticiaEvent) {
       try{
+        print("Hello");
         await _getAllNoticias();
-        yield NoticiasDescargadasState();
+        yield NoticiasDescargadasState(misNoticiasStream: _streamNoticias);
       }catch(e) {
+        print(e);
         yield NoticiasErrorState(errorMessage: "No se pudo descargar");
       }
 
     } else if(event is CargarImagenEvent){
-      chosenImage = await _chooseImage(event.takePictureFromCamera);
-      yield ImagenCargadaState(imagen: chosenImage);
+      try{
+        chosenImage = await _chooseImage(event.takePictureFromCamera);
+        yield ImagenCargadaState(imagen: chosenImage);
+      }catch(e){
 
+      }
     } else if(event is CrearNoticiaEvent){
       try {
-        String urlImage = await _uploadPicture(chosenImage);
-        await _saveNoticia(event.titulo, event.descripcion, event.autor, event.fuente, urlImage);
+        if(chosenImage != null) {
+          String urlImage = await _uploadPicture(chosenImage);
+          await _saveNoticia(event.titulo, event.descripcion, event.autor, event.fuente, urlImage);
+        } else {
+          await _saveNoticia(event.titulo, event.descripcion, event.autor, event.fuente, null);
+        }
         yield NoticiasCreadaState();
       }catch(e){
         yield NoticiasErrorState(errorMessage: "No se pudo guardar");
@@ -82,7 +93,7 @@ class MisnoticiasBloc extends Bloc<MisnoticiasEvent, MisnoticiasState> {
     String imageUrl
   ) async {
     // Crea un doc en la collection de apuntes
-
+    
     await FirebaseFirestore.instance.collection("noticias").doc().set({
       "titulo": titulo,
       "descripcion": descripcion,
@@ -99,21 +110,9 @@ class MisnoticiasBloc extends Bloc<MisnoticiasEvent, MisnoticiasState> {
     // recuperar lista de docs guardados en Cloud firestore
     // mapear a objeto de dart (Apunte)
     // agregar cada ojeto a una lista
-    var misNoticias = await FirebaseFirestore.instance.collection("noticias").get();
-    _documentsList = misNoticias.docs;
-
-    _noticiaList = misNoticias.docs
-        .map(
-          (elemento) => Noticia(
-            title: elemento["titulo"],
-            description: elemento["descripcion"],
-            author: elemento["autor"],
-            source: elemento["fuente"],
-            urlToImage: elemento["imagen"],
-            publishedAt: elemento["fecha"]
-          ),
-        )
-        .toList();
+    _streamNoticias =  FirebaseFirestore.instance.collection("noticias").snapshots();
+    //var misNoticias = await FirebaseFirestore.instance.collection("noticias").get();
+    
   }
 
 }

@@ -8,7 +8,14 @@ abstract class MisnoticiasState extends Equatable {
 }
 
 class MisnoticiasInitial extends MisnoticiasState {}
-class NoticiasDescargadasState extends MisnoticiasState {}
+class NoticiasDescargadasState extends MisnoticiasState {
+  final Stream<QuerySnapshot> misNoticiasStream;
+
+  NoticiasDescargadasState({@required this.misNoticiasStream});
+
+  @override
+  List<Object> get props => [misNoticiasStream];
+}
 
 class NoticiasErrorState extends MisnoticiasState {
   final String errorMessage;

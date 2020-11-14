@@ -28,7 +28,11 @@ class _BuscarState extends State < Buscar > {
           padding: const EdgeInsets.all(8.0),
             child: BlocConsumer < BuscarBloc, BuscarState > (
               listener: (context, state) {
-
+                if(state is BuscarErrorState){
+                  Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text("Ups... parece que algo salio mal"),)
+                    );
+                }
               },
               builder: (context, state) {
                 return SingleChildScrollView(

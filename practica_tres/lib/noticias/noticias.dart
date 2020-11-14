@@ -31,7 +31,11 @@ class _NoticiasState extends State<Noticias> {
           create: (context) => NoticiasBloc()..add(GetNewsEvent()),
           child: BlocConsumer<NoticiasBloc, NoticiasState>(
             listener: (context, state) {
-              // TODO: implement listener
+              if(state is NoticiasErrorState){
+                Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text("Ups... parece que algo salio mal"),)
+                    );
+              }
             },
             builder: (context, state) {
               if(state is NoticiasSuccessState) {
